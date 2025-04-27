@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodDelivery App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">FoodDelivery</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-section="restaurants">Restaurants</a></li>
+                    <li><a href="#" data-section="orders">My Orders</a></li>
+                    <li><a href="#" data-section="profile">Profile</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Restaurants Section -->
+        <section id="restaurants" class="active-section">
+            <h1>Restaurants</h1>
+            <div class="search-bar">
+                <input type="text" id="restaurant-search" placeholder="Search for restaurants or cuisines...">
+                <button class="search-btn">Search</button>
+            </div>
+            <div class="restaurants-list" id="restaurants-container">
+                <!-- Restaurants will be populated here -->
+                <div class="loading">Loading restaurants...</div>
+            </div>
+        </section>
+
+        <!-- Restaurant Detail Section -->
+        <section id="restaurant-detail" class="hidden-section">
+            <div class="back-btn" onclick="showSection('restaurants')">← Back to Restaurants</div>
+            <div id="restaurant-detail-container">
+                <!-- Restaurant details will be populated here -->
+                <div class="loading">Loading restaurant details...</div>
+            </div>
+            <div id="menu-items-container">
+                <!-- Menu items will be populated here -->
+                <div class="loading">Loading menu...</div>
+            </div>
+            <div id="cart-container" class="cart">
+                <h3>Your Order</h3>
+                <div id="cart-items">
+                    <!-- Cart items will be populated here -->
+                    <p class="empty-cart">Your cart is empty</p>
+                </div>
+                <div class="cart-total">
+                    <span>Total:</span>
+                    <span id="cart-total-price">$0.00</span>
+                </div>
+                <button id="checkout-btn" class="checkout-btn" disabled>Checkout</button>
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="orders" class="hidden-section">
+            <h1>My Orders</h1>
+            <div class="orders-list" id="orders-container">
+                <!-- Orders will be populated here -->
+                <div class="loading">Loading orders...</div>
+            </div>
+        </section>
+
+        <!-- Order Detail Section -->
+        <section id="order-detail" class="hidden-section">
+            <div class="back-btn" onclick="showSection('orders')">← Back to Orders</div>
+            <div id="order-detail-container">
+                <!-- Order details will be populated here -->
+                <div class="loading">Loading order details...</div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="hidden-section">
+            <h1>My Profile</h1>
+            <div class="profile-container" id="profile-container">
+                <!-- Profile will be populated here -->
+                <div class="loading">Loading profile...</div>
+            </div>
+        </section>
+
+        <!-- Checkout Section -->
+        <section id="checkout" class="hidden-section">
+            <div class="back-btn" onclick="showSection('restaurant-detail')">← Back to Restaurant</div>
+            <h1>Checkout</h1>
+            <div class="checkout-container">
+                <div class="checkout-details">
+                    <h3>Delivery Address</h3>
+                    <input type="text" id="delivery-address" placeholder="Enter your delivery address" class="full-width">
+                    
+                    <h3>Payment Method</h3>
+                    <div class="payment-methods">
+                        <div class="payment-method">
+                            <input type="radio" id="payment-card" name="payment-method" value="card" checked>
+                            <label for="payment-card">Credit Card</label>
+                        </div>
+                        <div class="payment-method">
+                            <input type="radio" id="payment-cash" name="payment-method" value="cash">
+                            <label for="payment-cash">Cash on Delivery</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="checkout-items">
+                        <!-- Checkout items will be populated here -->
+                    </div>
+                    <div class="order-total">
+                        <span>Total:</span>
+                        <span id="checkout-total-price">$0.00</span>
+                    </div>
+                    <button id="place-order-btn" class="checkout-btn">Place Order</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Confirmation Section -->
+        <section id="order-confirmation" class="hidden-section">
+            <div class="order-confirmation-container">
+                <div class="success-icon">✓</div>
+                <h2>Order Placed Successfully!</h2>
+                <p>Your order has been placed successfully. You can track its status in the "My Orders" section.</p>
+                <div id="order-confirmation-details">
+                    <!-- Order confirmation details will be populated here -->
+                </div>
+                <button class="primary-btn" onclick="showSection('orders')">View My Orders</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 FoodDelivery App. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
