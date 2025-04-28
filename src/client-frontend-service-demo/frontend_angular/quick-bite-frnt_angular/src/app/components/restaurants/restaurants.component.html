@@ -1,0 +1,35 @@
+<section id="restaurants" class="active-section">
+  <h1>Restaurants</h1>
+  <div class="search-bar">
+    <input
+      type="text"
+      id="restaurant-search"
+      placeholder="Search for restaurants or cuisines..."
+      [(ngModel)]="searchQuery"
+    />
+    <button class="search-btn" (click)="searchRestaurants()">Search</button>
+  </div>
+  <div class="restaurants-list" id="restaurants-container">
+    <div *ngIf="loading" class="loading">Loading restaurants...</div>
+    <div *ngIf="!loading && restaurants.length === 0" class="no-results">
+      No restaurants found.
+    </div>
+    <div *ngIf="!loading && restaurants.length > 0" class="restaurants-grid">
+      <div
+        *ngFor="let restaurant of restaurants"
+        class="restaurant-card"
+        [routerLink]="['/restaurant', restaurant.id]"
+      >
+        <div class="restaurant-image">Restaurant Image</div>
+        <div class="restaurant-info">
+          <div class="restaurant-name">{{ restaurant.name }}</div>
+          <div class="restaurant-cuisine">{{ restaurant.cuisine }}</div>
+          <div class="restaurant-rating">
+            <span class="rating">{{ restaurant.rating.toFixed(1) }}</span>
+            <span>{{ restaurant.address }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

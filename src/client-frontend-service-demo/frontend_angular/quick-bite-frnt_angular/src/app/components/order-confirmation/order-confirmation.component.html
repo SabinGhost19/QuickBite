@@ -1,0 +1,39 @@
+<section id="order-confirmation">
+  <div class="confirmation-container">
+    <div class="confirmation-header">
+      <h1>Order Confirmed!</h1>
+      <p>Thank you for your order. We'll notify you when it's ready.</p>
+    </div>
+
+    <div class="order-details" *ngIf="!loading && order">
+      <h3>Order Details</h3>
+      <div class="order-info">
+        <p><strong>Order ID:</strong> #{{ order.id }}</p>
+        <p><strong>Status:</strong> {{ order.status }}</p>
+        <p><strong>Delivery Address:</strong> {{ order.address }}</p>
+      </div>
+
+      <div class="order-items">
+        <h4>Items</h4>
+        <div class="order-item" *ngFor="let item of order.items">
+          <span class="item-name">{{ item.name }}</span>
+          <span class="item-quantity">x{{ item.quantity }}</span>
+          <span class="item-price"
+            >${{ (item.price * item.quantity).toFixed(2) }}</span
+          >
+        </div>
+      </div>
+
+      <div class="order-total">
+        <span>Total Amount</span>
+        <span>${{ order.totalAmount.toFixed(2) }}</span>
+      </div>
+    </div>
+
+    <div class="loading" *ngIf="loading">Loading order details...</div>
+
+    <button class="view-orders-btn" (click)="viewOrders()">
+      View All Orders
+    </button>
+  </div>
+</section>

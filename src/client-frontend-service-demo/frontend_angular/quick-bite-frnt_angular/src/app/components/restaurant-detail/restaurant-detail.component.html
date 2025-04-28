@@ -1,0 +1,89 @@
+<section id="restaurant-detail" class="active-section">
+  <div class="back-btn" (click)="goBack()">← Back to Restaurants</div>
+
+  <div *ngIf="loading" class="loading">Loading restaurant details...</div>
+
+  <div *ngIf="!loading && restaurant" id="restaurant-detail-container">
+    <div class="restaurant-detail">
+      <div class="restaurant-header">
+        <div>
+          <h2>{{ restaurant.name }}</h2>
+          <p>{{ restaurant.cuisine }} • {{ restaurant.address }}</p>
+        </div>
+        <div class="restaurant-actions">
+          <span class="rating">{{ restaurant.rating.toFixed(1) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && restaurant" id="menu-items-container">
+    <div
+      *ngIf="restaurant.menuItems && restaurant.menuItems.length === 0"
+      class="no-items"
+    >
+      No menu items available.
+    </div>
+
+    <div *ngIf="restaurant.menuItems && restaurant.menuItems.length > 0">
+      <div *ngFor="let category of getUniqueCategories()" class="menu-section">
+        <div class="menu-category">{{ category }}</div>
+        <div class="menu-items">
+          <div
+            *ngFor="let item of getMenuItemsByCategory(category)"
+            class="menu-item"
+          >
+            <div class="menu-item-name">{{ item.name }}</div>
+            <div class="menu-item-description">{{ item.description }}</div>
+            <div class="menu-item-price">${{ item.price.toFixed(2) }}</div>
+            <button class="add-to-cart" (click)="addToCart(item)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cart-container" class="cart">
+    <h3>Your Order</h3>
+    <div id="cart-items">
+      <div *ngIf="cartItems.length === 0" class="empty-cart">
+        Your cart is empty
+      </div>
+      <div *ngIf="cartItems.length > 0">
+        <div *ngFor="let item of cartItems" class="cart-item">
+          <div class="cart-item-details">
+            <div class="cart-item-name">{{ item.name }}</div>
+            <div class="cart-item-price">${{ item.price.toFixed(2) }}</div>
+          </div>
+          <div class="cart-item-actions">
+            <button
+              class="quantity-btn"
+              (click)="updateCartItemQuantity(item.id, item.quantity - 1)"
+            >
+              -
+            </button>
+            <div class="cart-item-quantity">{{ item.quantity }}</div>
+            <button
+              class="quantity-btn"
+              (click)="updateCartItemQuantity(item.id, item.quantity + 1)"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cart-total-price">${{ cartTotal.toFixed(2) }}</span>
+    </div>
+    <button
+      id="checkout-btn"
+      class="checkout-btn"
+      [disabled]="cartItems.length === 0"
+      (click)="goToCheckout()"
+    >
+      Checkout
+    </button>
+  </div>
+</section>

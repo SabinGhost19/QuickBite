@@ -1,0 +1,67 @@
+<section id="checkout" class="active-section">
+  <div class="back-btn" (click)="goBack()">← Back to Restaurant</div>
+  <h1>Checkout</h1>
+
+  <div class="checkout-container">
+    <div class="checkout-details">
+      <h3>Delivery Address</h3>
+      <input
+        type="text"
+        id="delivery-address"
+        placeholder="Enter your delivery address"
+        class="full-width"
+        [(ngModel)]="deliveryAddress"
+      />
+
+      <h3>Payment Method</h3>
+      <div class="payment-methods">
+        <div class="payment-method">
+          <input
+            type="radio"
+            id="payment-card"
+            name="payment-method"
+            value="card"
+            [(ngModel)]="paymentMethod"
+          />
+          <label for="payment-card">Credit Card</label>
+        </div>
+        <div class="payment-method">
+          <input
+            type="radio"
+            id="payment-cash"
+            name="payment-method"
+            value="cash"
+            [(ngModel)]="paymentMethod"
+          />
+          <label for="payment-cash">Cash on Delivery</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary">
+      <h3>Order Summary</h3>
+      <div id="checkout-items">
+        <div *ngFor="let item of cartItems" class="cart-item">
+          <div class="cart-item-details">
+            <div class="cart-item-name">
+              {{ item.name }} x {{ item.quantity }}
+            </div>
+          </div>
+          <div>${{ (item.price * item.quantity).toFixed(2) }}</div>
+        </div>
+      </div>
+      <div class="order-total">
+        <span>Total:</span>
+        <span id="checkout-total-price">${{ cartTotal.toFixed(2) }}</span>
+      </div>
+      <button
+        id="place-order-btn"
+        class="checkout-btn"
+        (click)="placeOrder()"
+        [disabled]="loading"
+      >
+        {{ loading ? "Processing..." : "Place Order" }}
+      </button>
+    </div>
+  </div>
+</section>

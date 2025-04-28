@@ -1,0 +1,45 @@
+<div class="orders-container">
+  <h1>My Orders</h1>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading orders...</p>
+  </div>
+
+  <div *ngIf="!loading && orders.length === 0" class="no-orders">
+    <p>You haven't placed any orders yet.</p>
+    <a routerLink="/restaurants" class="browse-btn">Browse Restaurants</a>
+  </div>
+
+  <div *ngIf="!loading && orders.length > 0" class="orders-list">
+    <div *ngFor="let order of orders" class="order-card">
+      <div class="order-header">
+        <div class="order-info">
+          <h3>Order #{{ order.id }}</h3>
+          <p class="order-date">{{ formatDate(order.createdAt) }}</p>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+          {{ order.status | titlecase }}
+        </span>
+      </div>
+
+      <div class="order-items">
+        <div *ngFor="let item of order.items" class="order-item">
+          <span class="item-name">{{ item.name }}</span>
+          <span class="item-quantity">x{{ item.quantity }}</span>
+          <span class="item-price">${{ item.price.toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <div class="delivery-address">
+          <strong>Delivery Address:</strong>
+          <p>{{ order.address }}</p>
+        </div>
+        <div class="order-total">
+          <span>Total Amount:</span>
+          <span class="total-price">${{ order.totalAmount.toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
