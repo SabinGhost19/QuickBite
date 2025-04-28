@@ -1,0 +1,155 @@
+version: "3.8"
+
+services:
+  # user Service (Spring Boot)
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:userdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    networks:
+      - food-delivery-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # restaurant Service (Go)
+  restaurant-service:
+    build:
+      context: ./restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    ports:
+      - "8081:8081"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - user-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Order Service (Go)
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - user-service
+      - restaurant-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Payment Service (Go)
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    ports:
+      - "8083:8083"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - order-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Delivery Service (Go)
+  delivery-service:
+    build:
+      context: ./delivery-service
+      dockerfile: Dockerfile
+    container_name: delivery-service
+    ports:
+      - "8084:8084"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - order-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Notification Service (Go)
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8085:8085"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - user-service
+      - order-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./client-frontend-service-demo/frontend_angular/quick-bite-frontend-v1.1
+      dockerfile: Dockerfile
+    container_name: quick-bite-frontend
+    ports:
+      - "3205:3205"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - user-service
+      - restaurant-service
+      - order-service
+      - payment-service
+      - delivery-service
+      - notification-service
+  cleanup:
+    image: docker:cli
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: docker image prune -f
+    depends_on:
+      - user-service
+      - restaurant-service
+      - order-service
+      - payment-service
+      - delivery-service
+      - notification-service
+      - frontend
+
+networks:
+  food-delivery-network:
+    driver: bridge
