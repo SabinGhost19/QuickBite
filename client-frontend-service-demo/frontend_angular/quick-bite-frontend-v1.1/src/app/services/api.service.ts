@@ -40,7 +40,7 @@ export class ApiService {
   // Order API calls
   getOrders(userId: number): Observable<Order[]> {
     return this.http.get<Order[]>(
-      `${this.API_ENDPOINTS.orders}/${userId}/orders`
+      `${this.API_ENDPOINTS.orders}/user/${userId}/orders`
     );
   }
 

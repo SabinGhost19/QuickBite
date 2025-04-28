@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # restaurant Service (Go)
+  # restaurant Service
   restaurant-service:
     build:
       context: ./restaurant-service
@@ -41,7 +41,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # Order Service (Go)
+  # order Service
   order-service:
     build:
       context: ./order-service
@@ -61,7 +61,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # Payment Service (Go)
+  # payment Service
   payment-service:
     build:
       context: ./payment-service
@@ -80,7 +80,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # Delivery Service (Go)
+  # delivery Service
   delivery-service:
     build:
       context: ./delivery-service
@@ -99,7 +99,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # Notification Service (Go)
+  # notification Service
   notification-service:
     build:
       context: ./notification-service
@@ -119,7 +119,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # Frontend
+  # frontend
   frontend:
     build:
       context: ./client-frontend-service-demo/frontend_angular/quick-bite-frontend-v1.1

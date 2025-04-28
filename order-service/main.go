@@ -340,6 +340,23 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Order service is up and running"))
 }
+func enableCORS(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Set CORS headers
+        w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3205")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        
+        // Handle preflight OPTIONS requests
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+        
+        // Process the next handler
+        next.ServeHTTP(w, r)
+    })
+}
 
 func main() {
 	r := mux.NewRouter()
@@ -355,9 +372,11 @@ func main() {
 	r.HandleFunc("/api/orders/{id}/cancel", cancelOrder).Methods("PUT")
 	
 	// Filtered orders
-	r.HandleFunc("/api/users/{userId}/orders", getOrdersByUser).Methods("GET")
+	r.HandleFunc("/api/orders/user/{userId}/orders", getOrdersByUser).Methods("GET")
 	r.HandleFunc("/api/restaurants/{restaurantId}/orders", getOrdersByRestaurant).Methods("GET")
 
+	handler := enableCORS(r)
+
 	log.Println("Order service started on :8082")
-	log.Fatal(http.ListenAndServe(":8082", r))
+	log.Fatal(http.ListenAndServe(":8082", handler))
 }
