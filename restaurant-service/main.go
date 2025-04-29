@@ -3,12 +3,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 // Restaurant represents a restaurant entity
@@ -232,7 +235,34 @@ func corsMiddleware(next http.Handler) http.Handler {
         next.ServeHTTP(w, r)
     })
 }
+
+
+// Adaugă funcția loadEnv() pentru încărcarea variabilelor de mediu
+func loadEnv() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+		log.Println("Using default or environment variables instead")
+	}
+	
+	// Set default values if environment variables are not set
+	if os.Getenv("HOST") == "" {
+		os.Setenv("HOST", "0.0.0.0")
+	}
+	
+	if os.Getenv("PORT") == "" {
+		os.Setenv("PORT", "8081")
+	}
+	
+	// Log environment variables (for debugging)
+	log.Println("Environment configured successfully")
+	log.Printf("Server running on %s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+}
 func main() {
+	// Adaugă încărcarea variabilelor de mediu
+	loadEnv()
+	
 	r := mux.NewRouter()
 
 	r.Use(corsMiddleware)
@@ -251,6 +281,11 @@ func main() {
 	r.HandleFunc("/api/restaurants/{id}/menu", getMenuItems).Methods("GET")
 	r.HandleFunc("/api/restaurants/{id}/menu", addMenuItem).Methods("POST")
 
-	log.Println("Restaurant service started on :8081")
-	log.Fatal(http.ListenAndServe(":8081", r))
+	// Obține adresa serverului din variabilele de mediu
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	serverAddr := fmt.Sprintf("%s:%s", host, port)
+
+	log.Printf("Restaurant service started on %s", serverAddr)
+	log.Fatal(http.ListenAndServe(serverAddr, r))
 }

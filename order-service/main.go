@@ -1,4 +1,3 @@
-// order-service/main.go
 package main
 
 import (
@@ -7,24 +6,26 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv" // Adăugat pentru încărcarea fișierului .env
 )
 
 // Order represents a food order
 type Order struct {
-	ID           int           `json:"id"`
-	UserID       int           `json:"userId"`
-	RestaurantID int           `json:"restaurantId"`
-	Items        []OrderItem   `json:"items"`
-	TotalAmount  float64       `json:"totalAmount"`
-	Status       string        `json:"status"` // "created", "paid", "preparing", "out_for_delivery", "delivered", "cancelled"
-	Address      string        `json:"address"`
-	CreatedAt    time.Time     `json:"createdAt"`
-	UpdatedAt    time.Time     `json:"updatedAt"`
+	ID           int         `json:"id"`
+	UserID       int         `json:"userId"`
+	RestaurantID int         `json:"restaurantId"`
+	Items        []OrderItem `json:"items"`
+	TotalAmount  float64     `json:"totalAmount"`
+	Status       string      `json:"status"` // "created", "paid", "preparing", "out_for_delivery", "delivered", "cancelled"
+	Address      string      `json:"address"`
+	CreatedAt    time.Time   `json:"createdAt"`
+	UpdatedAt    time.Time   `json:"updatedAt"`
 }
 
 // OrderItem represents an item in the order
@@ -35,14 +36,44 @@ type OrderItem struct {
 	Quantity   int     `json:"quantity"`
 }
 
+// Config holds service configuration from environment variables
+type Config struct {
+	Port                   string
+	PaymentServiceURL      string
+	DeliveryServiceURL     string
+	NotificationServiceURL string
+	AllowedOrigins         string
+}
+
+// Global variables
 var (
-	orders    []Order
-	nextID    int = 1
-	mutex     sync.Mutex
+	orders []Order
+	nextID int = 1
+	mutex  sync.Mutex
+	config Config
 )
 
-// Initialize with sample data
+// Initialize with sample data and load config
 func init() {
+	// Încarcă variabilele de mediu din fișierul .env
+	// Nu va genera eroare dacă fișierul nu există
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Info: No .env file found or error loading it. Using environment variables and defaults.")
+	} else {
+		log.Println("Successfully loaded .env file")
+	}
+
+	// Load configuration
+	config = Config{
+		// Default values
+		Port:                   getEnv("ORDER_SERVICE_PORT", "8082"),
+		PaymentServiceURL:      getEnv("PAYMENT_SERVICE_URL", "http://payment-service:8083/api/payments"),
+		DeliveryServiceURL:     getEnv("DELIVERY_SERVICE_URL", "http://delivery-service:8084/api/deliveries"),
+		NotificationServiceURL: getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service:8085/api/notifications"),
+		AllowedOrigins:         getEnv("ALLOWED_ORIGINS", "http://localhost:3205"),
+	}
+
 	// Sample order
 	now := time.Now()
 	orders = append(orders, Order{
@@ -64,6 +95,15 @@ func init() {
 		UpdatedAt:   now,
 	})
 	nextID++
+}
+
+// Helper function to get environment variable with fallback
+func getEnv(key, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
 }
 
 // Get all orders
@@ -257,7 +297,7 @@ func cancelOrder(w http.ResponseWriter, r *http.Request) {
 
 // Notify payment service about new order
 func notifyPaymentService(order Order) {
-	paymentURL := "http://payment-service:8083/api/payments"
+	paymentURL := config.PaymentServiceURL
 	paymentData := map[string]interface{}{
 		"orderId":     order.ID,
 		"userId":      order.UserID,
@@ -283,7 +323,7 @@ func notifyPaymentService(order Order) {
 
 // Notify delivery service about paid order
 func notifyDeliveryService(order Order) {
-	deliveryURL := "http://delivery-service:8084/api/deliveries"
+	deliveryURL := config.DeliveryServiceURL
 	deliveryData := map[string]interface{}{
 		"orderId":      order.ID,
 		"userId":       order.UserID,
@@ -310,7 +350,7 @@ func notifyDeliveryService(order Order) {
 
 // Notify notification service about order status changes
 func notifyNotificationService(order Order) {
-	notificationURL := "http://notification-service:8085/api/notifications"
+	notificationURL := config.NotificationServiceURL
 	notificationData := map[string]interface{}{
 		"userId":    order.UserID,
 		"type":      "order_update",
@@ -340,20 +380,19 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Order service is up and running"))
 }
+
+// CORS middleware
 func enableCORS(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        // Set CORS headers
-        w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3205")
+        w.Header().Set("Access-Control-Allow-Origin", config.AllowedOrigins)
         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
         
-        // Handle preflight OPTIONS requests
         if r.Method == "OPTIONS" {
             w.WriteHeader(http.StatusOK)
             return
         }
         
-        // Process the next handler
         next.ServeHTTP(w, r)
     })
 }
@@ -375,8 +414,16 @@ func main() {
 	r.HandleFunc("/api/orders/user/{userId}/orders", getOrdersByUser).Methods("GET")
 	r.HandleFunc("/api/restaurants/{restaurantId}/orders", getOrdersByRestaurant).Methods("GET")
 
+	// Apply CORS middleware
 	handler := enableCORS(r)
 
-	log.Println("Order service started on :8082")
-	log.Fatal(http.ListenAndServe(":8082", handler))
+	log.Printf("Order service configuration:")
+	log.Printf("- Port: %s", config.Port)
+	log.Printf("- Payment Service URL: %s", config.PaymentServiceURL)
+	log.Printf("- Delivery Service URL: %s", config.DeliveryServiceURL)
+	log.Printf("- Notification Service URL: %s", config.NotificationServiceURL)
+	log.Printf("- Allowed Origins: %s", config.AllowedOrigins)
+
+	log.Printf("Order service started on port %s", config.Port)
+	log.Fatal(http.ListenAndServe(":"+config.Port, handler))
 }

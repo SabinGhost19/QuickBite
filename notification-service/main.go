@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 // Notification represents a notification entity
@@ -24,11 +26,46 @@ type Notification struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+// Config holds service configuration from environment variables
+type Config struct {
+	Port           string
+	AllowedOrigins string
+}
+
 var (
 	notifications []Notification
 	nextID        int = 1
 	mutex         sync.Mutex
+	config        Config
 )
+
+// Initialize configuration
+func init() {
+	// Încarcă variabilele de mediu din fișierul .env
+	// Nu va genera eroare dacă fișierul nu există
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Info: No .env file found or error loading it. Using environment variables and defaults.")
+	} else {
+		log.Println("Successfully loaded .env file")
+	}
+
+	// Load configuration
+	config = Config{
+		// Default values
+		Port:           getEnv("NOTIFICATION_SERVICE_PORT", "8085"),
+		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:3205"),
+	}
+}
+
+// Helper function to get environment variable with fallback
+func getEnv(key, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
+}
 
 // Get all notifications
 func getNotifications(w http.ResponseWriter, r *http.Request) {
@@ -197,6 +234,22 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Notification service is up and running"))
 }
 
+// CORS middleware
+func enableCORS(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", config.AllowedOrigins)
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+        
+        next.ServeHTTP(w, r)
+    })
+}
+
 func main() {
 	r := mux.NewRouter()
 
@@ -215,6 +268,13 @@ func main() {
 	r.HandleFunc("/api/orders/{orderId}/notifications", getNotificationsByOrder).Methods("GET")
 	r.HandleFunc("/api/users/{userId}/notifications/read-all", markAllAsRead).Methods("PUT")
 
-	log.Println("Notification service started on :8085")
-	log.Fatal(http.ListenAndServe(":8085", r))
+	// Apply CORS middleware
+	handler := enableCORS(r)
+
+	log.Printf("Notification service configuration:")
+	log.Printf("- Port: %s", config.Port)
+	log.Printf("- Allowed Origins: %s", config.AllowedOrigins)
+
+	log.Printf("Notification service started on port %s", config.Port)
+	log.Fatal(http.ListenAndServe(":"+config.Port, handler))
 }

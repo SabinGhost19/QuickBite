@@ -4,13 +4,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 // Delivery represents a delivery entity
@@ -219,7 +222,12 @@ func updateDeliveryStatus(w http.ResponseWriter, r *http.Request) {
 
 // Update order status
 func updateOrderStatus(orderID int, status string) {
-	orderURL := "http://order-service:8082/api/orders/" + strconv.Itoa(orderID) + "/status"
+	orderServiceURL := os.Getenv("ORDER_SERVICE_URL")
+	if orderServiceURL == "" {
+		orderServiceURL = "http://order-service:8082"
+	}
+	
+	orderURL := fmt.Sprintf("%s/api/orders/%d/status", orderServiceURL, orderID)
 	statusUpdate := map[string]string{
 		"status": status,
 	}
@@ -379,7 +387,38 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Delivery service is up and running"))
 }
 
+// Adaugă funcția loadEnv()
+func loadEnv() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+		log.Println("Using default or environment variables instead")
+	}
+	
+	// Set default values if environment variables are not set
+	if os.Getenv("HOST") == "" {
+		os.Setenv("HOST", "0.0.0.0")
+	}
+	
+	if os.Getenv("PORT") == "" {
+		os.Setenv("PORT", "8084")
+	}
+	
+	if os.Getenv("ORDER_SERVICE_URL") == "" {
+		os.Setenv("ORDER_SERVICE_URL", "http://order-service:8082")
+	}
+	
+	// Log environment variables (for debugging)
+	log.Println("Environment configured successfully")
+	log.Printf("Server running on %s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	log.Printf("Order service URL: %s", os.Getenv("ORDER_SERVICE_URL"))
+}
+
 func main() {
+	// Încarcă variabile de mediu
+	loadEnv()
+	
 	r := mux.NewRouter()
 
 	// Health check route
@@ -401,6 +440,11 @@ func main() {
 	r.HandleFunc("/api/couriers", createCourier).Methods("POST")
 	r.HandleFunc("/api/couriers/{id}/availability", updateCourierAvailability).Methods("PUT")
 
-	log.Println("Delivery service started on :8084")
-	log.Fatal(http.ListenAndServe(":8084", r))
+	// Obține adresa serverului din variabilele de mediu
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	serverAddr := fmt.Sprintf("%s:%s", host, port)
+
+	log.Printf("Delivery service started on %s", serverAddr)
+	log.Fatal(http.ListenAndServe(serverAddr, r))
 }

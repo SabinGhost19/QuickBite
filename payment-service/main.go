@@ -4,13 +4,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 // Payment represents a payment transaction
@@ -154,7 +157,9 @@ func processPayment(w http.ResponseWriter, r *http.Request) {
 
 // Update order status after payment processing
 func updateOrderStatus(orderID int, status string) {
-	orderURL := "http://order-service:8082/api/orders/" + strconv.Itoa(orderID) + "/status"
+	orderServiceURL := os.Getenv("ORDER_SERVICE_URL")
+	orderURL := fmt.Sprintf("%s/api/orders/%d/status", orderServiceURL, orderID)
+	
 	statusUpdate := map[string]string{
 		"status": status,
 	}
@@ -242,7 +247,23 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Payment service is up and running"))
 }
 
+func loadEnv() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+	
+	// Log environment variables (for debugging)
+	log.Println("Environment loaded successfully")
+	log.Printf("Server running on %s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	log.Printf("Order service URL: %s", os.Getenv("ORDER_SERVICE_URL"))
+}
+
 func main() {
+	// Load environment variables
+	loadEnv()
+	
 	r := mux.NewRouter()
 
 	// Health check route
@@ -258,6 +279,11 @@ func main() {
 	// Filtered payments
 	r.HandleFunc("/api/orders/{orderId}/payments", getPaymentsByOrder).Methods("GET")
 
-	log.Println("Payment service started on :8083")
-	log.Fatal(http.ListenAndServe(":8083", r))
+	// Get server address from environment variables
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	serverAddr := fmt.Sprintf("%s:%s", host, port)
+	
+	log.Printf("Payment service started on %s", serverAddr)
+	log.Fatal(http.ListenAndServe(serverAddr, r))
 }
