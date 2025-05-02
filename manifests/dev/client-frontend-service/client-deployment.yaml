@@ -13,13 +13,23 @@ spec:
     spec:
       containers:
         - name: quickbite-frontend
-          image: sabinghost19/quickbite-frontend:v1.0
-          resources:
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-            requests:
-              memory: "64Mi"
-              cpu: "250m"
+          image: sabinghost19/quickbite-frontend:v9.0
+          env:
+            - name: API_BASE_URL
+              value: "http://user-service"
+            - name: RESTAURANTS_SERVICE_URL
+              value: ""
+            - name: ORDERS_SERVICE_URL
+              value: "http://orders-service"
+            - name: PAYMENTS_SERVICE_URL
+              value: "http://payments-service"
+            - name: DELIVERIES_SERVICE_URL
+              value: "http://delivery-service"
+            - name: NOTIFICATIONS_SERVICE_URL
+              value: "http://notification-service"
+            - name: NGINX_PORT
+              value: "80"
+            - name: FRONTEND_PORT
+              value: "3205"
           ports:
             - containerPort: 3205

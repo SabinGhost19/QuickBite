@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: delivery-mservice
+  name: restaurant-service
 spec:
   selector:
     matchLabels:
-      app: delivery-mservice
+      app: restaurant-service
   template:
     metadata:
       labels:
-        app: delivery-mservice
+        app: restaurant-service
     spec:
       containers:
-        - name: delivery-mservice
-          image: sabinghost19/quickbite-delivery-service:v1.0
+        - name: restaurant-service
+          image: sabinghost19/quickbite-restaurant-service:v1.0
           resources:
             limits:
               memory: "128Mi"
@@ -22,4 +22,4 @@ spec:
               memory: "64Mi"
               cpu: "250m"
           ports:
-            - containerPort: 8084
+            - containerPort: 8081

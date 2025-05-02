@@ -4,22 +4,24 @@ import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
 import { Restaurant, MenuItem } from '../models/restaurant.model';
 import { Order } from '../models/order.model';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  private API_BASE_URL = 'http://localhost:8080';
-  private API_ENDPOINTS = {
-    users: `${this.API_BASE_URL}/api/users`,
-    restaurants: 'http://localhost:8081/api/restaurants',
-    orders: 'http://localhost:8082/api/orders',
-    payments: 'http://localhost:8083/api/payments',
-    deliveries: 'http://localhost:8084/api/deliveries',
-    notifications: 'http://localhost:8085/api/notifications',
-  };
+  private API_ENDPOINTS: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private config: ConfigService) {
+    this.API_ENDPOINTS = {
+      users: `${this.config.getApiBaseUrl()}/api/users`,
+      restaurants: `${this.config.getRestaurantsServiceUrl()}/api/restaurants`,
+      orders: `${this.config.getOrdersServiceUrl()}/api/orders`,
+      payments: `${this.config.getPaymentsServiceUrl()}/api/payments`,
+      deliveries: `${this.config.getDeliveriesServiceUrl()}/api/deliveries`,
+      notifications: `${this.config.getNotificationsServiceUrl()}/api/notifications`,
+    };
+  }
 
   // User API calls
   getUser(userId: number): Observable<User> {

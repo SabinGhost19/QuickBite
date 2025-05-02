@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: sabinghost19/quickbite-order-service:v1.0
+          ports:
+            - containerPort: 8082
+          env:
+            - name: ORDER_SERVICE_PORT
+              value: "8082"

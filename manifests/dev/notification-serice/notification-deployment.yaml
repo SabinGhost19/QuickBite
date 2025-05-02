@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: sabinghost19/quickbite-notification-service:v1.0
+          ports:
+            - containerPort: 8085
+          env:
+            - name: NOTIFICATION_SERVICE_PORT
+              value: "8085"

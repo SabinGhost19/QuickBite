@@ -13,13 +13,6 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: quickbite-user-service:latest
-          resources:
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-            requests:
-              memory: "64Mi"
-              cpu: "250m"
+          image: sabinghost19/quickbite-user-service:v1.0
           ports:
             - containerPort: 8080
