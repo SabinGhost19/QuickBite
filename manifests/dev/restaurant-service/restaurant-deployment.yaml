@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: restaurant-service
-          image: sabinghost19/quickbite-restaurant-service:v1.0
+          image: sabinghost19/quickbite-restaurant-service:v1.1
           resources:
             limits:
               memory: "128Mi"

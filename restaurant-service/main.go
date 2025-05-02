@@ -66,6 +66,7 @@ func init() {
 // Get all restaurants
 func getRestaurants(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	fmt.Print("Fetching all restaurants......working...\n");
 	json.NewEncoder(w).Encode(restaurants)
 }
 

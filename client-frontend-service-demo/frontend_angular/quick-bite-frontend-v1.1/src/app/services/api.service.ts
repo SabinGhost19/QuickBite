@@ -30,10 +30,12 @@ export class ApiService {
 
   // Restaurant API calls
   getRestaurants(): Observable<Restaurant[]> {
+    console.log('Restaurant API URL:', this.API_ENDPOINTS.restaurants);
     return this.http.get<Restaurant[]>(this.API_ENDPOINTS.restaurants);
   }
 
   getRestaurantById(restaurantId: number): Observable<Restaurant> {
+    console.log('Restaurant API URL:', this.API_ENDPOINTS.restaurants);
     return this.http.get<Restaurant>(
       `${this.API_ENDPOINTS.restaurants}/${restaurantId}`
     );
