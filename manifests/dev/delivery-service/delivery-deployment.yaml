@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-mservice
+spec:
+  selector:
+    matchLabels:
+      app: delivery-mservice
+  template:
+    metadata:
+      labels:
+        app: delivery-mservice
+    spec:
+      containers:
+        - name: delivery-mservice
+          image: delivery-service:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8084

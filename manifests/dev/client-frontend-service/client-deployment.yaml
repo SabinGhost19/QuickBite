@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quickbite-frontend
+spec:
+  selector:
+    matchLabels:
+      app: quickbite-frontend
+  template:
+    metadata:
+      labels:
+        app: quickbite-frontend
+    spec:
+      containers:
+        - name: quickbite-frontend
+          image: sabinghost19/quickbite-frontend:v1.0
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 3205
